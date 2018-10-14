@@ -1,10 +1,13 @@
 from sklearn import datasets
-import pandas as pd
-import random
-import numpy as np
 
 import matplotlib
 matplotlib.use('TkAgg')
+
+import seaborn as sns
+import pandas as pd
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 '''
 PROCEDURE
@@ -78,12 +81,8 @@ def check_purity(df):
 
 # PART 3B: Classify data
 '''
-<<<<<<< HEAD
 This function returns the class label containing the most predominant values
 by identifying the greatest number of flowers within a class 
-=======
-If data is pure we can classify the data
->>>>>>> 56ae0f550b88f477098002758a748298d082b433
 '''
 def classify(data):
 
@@ -94,18 +93,45 @@ def classify(data):
 
     return classification
 
-#### PART 3X: Build Decision tree Algorithm
+# PART 3C: Determine Potential Splits
+'''
+This function will return a dictionary containing potential splits w.r.t. each feature
+value (column) of the data frame
+'''
+def potential_splits(data):
+    # initialize a dictionary object to store lists containing unique values for each feature
+    potential_splits = {0: [], 1: [], 2: [], 3: []}
+
+    # populate a temporary list with values containing the
+    temp_list = []
+    num_cols = data.shape[1]-1
+    for column in range(0, num_cols):
+        unique_value_col = np.unique(data[:, column])
+        length = len(unique_value_col)
+        for idx in range(0, length):
+            if idx != 0:
+                x_value = (unique_value_col[idx] + unique_value_col[idx-1])/2
+                temp_list.append(x_value)
+        potential_splits[column] = temp_list
+        # empty temp_list for next iteration
+        temp_list = []
+
+    return potential_splits
+
+# PART 3X: Build Decision tree Algorithm
 def decision_tree():
 
     return True
 
-#### PART 4: Determine Accuracy
+# PART 4: Determine Accuracy
 
 
 f_name = datasets.load_iris()
 m_columns = {0: 'Sepal length', 1: 'Sepal width', 2: 'Petal length', 3: 'Petal width'}
 m_label = 'Label'
 df = load_data(f_name, m_columns, m_label)
+
+print df.columns
 
 train_df, test_df = train_test_split(df, 20)
 
@@ -118,9 +144,13 @@ for i in range(0, len(test_set)):
 
 # convert training dataframe into a numpy 2-D array
 train_data = train_df.values
-train_data2 = train_df[train_df['Petal width'] < 0.8].values
-x = check_purity(train_data2)
+splits = potential_splits(train_data)
 
-y = classify(train_data)
-print y
+sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False)
+plt.vlines(x=splits[3], ymin=0, ymax=7)
+plt.show()
+
+
+
+
 
