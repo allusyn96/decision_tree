@@ -78,8 +78,12 @@ def check_purity(df):
 
 # PART 3B: Classify data
 '''
+<<<<<<< HEAD
 This function returns the class label containing the most predominant values
 by identifying the greatest number of flowers within a class 
+=======
+If data is pure we can classify the data
+>>>>>>> 56ae0f550b88f477098002758a748298d082b433
 '''
 def classify(data):
 
