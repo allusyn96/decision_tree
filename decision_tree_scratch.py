@@ -118,6 +118,20 @@ def potential_splits(data):
 
     return potential_splits
 
+# PART 3D: Split data function
+'''
+This function will split the data and return two numPy arrays based on 1. The column or 
+feature and 2. A split value
+'''
+def split_value(data, feature, split_value):
+
+    col = data[:, feature]
+
+    data_below = data[col <= split_value]
+    data_above = data[col > split_value]
+
+    return data_below, data_above
+
 # PART 3X: Build Decision tree Algorithm
 def decision_tree():
 
@@ -130,8 +144,6 @@ f_name = datasets.load_iris()
 m_columns = {0: 'Sepal length', 1: 'Sepal width', 2: 'Petal length', 3: 'Petal width'}
 m_label = 'Label'
 df = load_data(f_name, m_columns, m_label)
-
-print df.columns
 
 train_df, test_df = train_test_split(df, 20)
 
@@ -146,8 +158,22 @@ for i in range(0, len(test_set)):
 train_data = train_df.values
 splits = potential_splits(train_data)
 
+# plot the data
+'''
 sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False)
 plt.vlines(x=splits[3], ymin=0, ymax=7)
+plt.show()
+'''
+
+# plotting using the split value function
+split_col = 3
+threshold = 0.8
+data_below, data_above = split_value(train_data, split_col, threshold)
+
+data_below_df = pd.DataFrame(data_below, columns=df.columns)
+sns.lmplot(x='Petal width', y='Petal length', data=data_below_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
+plt.vlines(x=threshold, ymin=0, ymax=7)
+plt.xlim(0, 2.6)
 plt.show()
 
 
