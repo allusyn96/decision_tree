@@ -1,5 +1,6 @@
 from __future__ import division
 from sklearn import datasets
+from pprint import pprint
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -145,7 +146,7 @@ def calc_entropy(data):
     counts = np.unique(target, return_counts=True)[1]
     sum_counts = counts.sum()
     probabilities = counts / sum_counts
-    entropy = np.sum((-1 * probabilities) * (np.log2(probabilities)))
+    entropy = np.sum(probabilities * (-np.log2(probabilities)))
 
     return entropy
 
@@ -171,7 +172,7 @@ def best_split(data, m_splits):
     min_entropy = 2000
     for idx in m_splits:
         for split_val in m_splits[idx]:
-            m_below, m_above = split_value(train_data, idx, split_val)
+            m_below, m_above = split_value(data, idx, split_val)
             curr_entropy = calc_overall_entropy(m_below, m_above)
             # if current calculated entropy is strictly smaller than minimum entropy
             # replace the smallest value with the current value
@@ -186,7 +187,7 @@ def best_split(data, m_splits):
 '''
 This is a recursive algorithm which will return a dictionary representing our tree
 '''
-def decision_tree_algorithm(dframe, count=0):
+def decision_tree_algorithm(dframe, cols, count=0):
 
     '''
     Example Tree:
@@ -194,29 +195,33 @@ def decision_tree_algorithm(dframe, count=0):
     [{"petal-width > 0.4?": ["Iris Virginica"]}, Iris-versicolor]}]}
     '''
     if count == 0:
-        dframe = dframe.values # convert to a 2-D numPy array
+        data = dframe.values # convert to a 2-D numPy array
+    else:
+        data = dframe
 
-    count = count+1 # increment count to escape if statement after first check
     # base (stopping) case
-    if check_purity(dframe):
-        label = classify(dframe)
+    if check_purity(data) == True:
+        label = classify(data)
         return label # return classification of data
 
     # recursive case
-    splits = potential_splits(dframe)
-    m_feature, m_value = best_split(dframe, splits)
-    m_data_below, m_data_above = split_value(dframe, m_feature, m_value) # partition the data based on m_feature and m_value
+    count = count+1 # increment count to escape if statement after first check
+
+    splits = potential_splits(data)
+    m_feature, m_value = best_split(data, splits)
+    m_data_below, m_data_above = split_value(data, m_feature, m_value) # partition the data based on m_feature and m_value
 
     # ask question to recursively branch
-    question = "{0} < {1}?".format(m_feature, m_value)
+    question = "{0} < {1}?".format(cols[m_feature], m_value)
     tree = {question: []} # instantiate dictionary object
 
-    label_yes = decision_tree_algorithm(m_data_below, count) # recurse on smaller subsets of data
-    label_no = decision_tree_algorithm(m_data_above, count)
+    label_yes = decision_tree_algorithm(m_data_below, cols, count) # recurse on smaller subsets of data
+    label_no = decision_tree_algorithm(m_data_above, cols, count)
     # end of recursion
 
     # after stack unwinding, classify tree from bottom up
-    tree[question].append([label_yes, label_no])
+    tree[question].append(label_yes)
+    tree[question].append(label_no)
 
     return tree
 
@@ -262,12 +267,12 @@ print m_columns[feature]
 
 no_iris_virginica = train_df[train_df['Label'] != 'Iris-virginica']
 
+tree = decision_tree_algorithm(train_df, column_names)
+print pprint(tree)
+
 '''
 sns.lmplot(x='Petal width', y='Petal length', data=no_iris_virginica, hue='Label', fit_reg=False, size=6, aspect=1.5)
 plt.vlines(x=val, ymin=0, ymax=7)
 plt.show()
 '''
-tree = decision_tree_algorithm(no_iris_virginica)
-print tree
-
 
