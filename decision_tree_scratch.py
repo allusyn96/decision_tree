@@ -1,3 +1,4 @@
+from __future__ import division
 from sklearn import datasets
 
 import matplotlib
@@ -137,6 +138,20 @@ def decision_tree():
 
     return True
 
+# Part 3E: Lowest Overall Entropy
+'''
+We will calculate the lowest overall entropy per attribute using this function. 
+'''
+def calc_entropy(data):
+
+    target = data[:, -1]
+    counts = np.unique(target, return_counts=True)[1]
+    sum_counts = counts.sum()
+    probabilities = counts / sum_counts
+    entropy = np.sum((-1 * probabilities) * (np.log2(probabilities)))
+
+    return entropy
+
 # PART 4: Determine Accuracy
 
 
@@ -158,23 +173,24 @@ for i in range(0, len(test_set)):
 train_data = train_df.values
 splits = potential_splits(train_data)
 
-# plot the data
-'''
-sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False)
-plt.vlines(x=splits[3], ymin=0, ymax=7)
-plt.show()
-'''
 
 # plotting using the split value function
 split_col = 3
 threshold = 0.8
 data_below, data_above = split_value(train_data, split_col, threshold)
 
+# used for testing entropy for each class
 data_below_df = pd.DataFrame(data_below, columns=df.columns)
-sns.lmplot(x='Petal width', y='Petal length', data=data_below_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
+data_above_df = pd.DataFrame(data_above, columns=df.columns)
+
+'''
+sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
 plt.vlines(x=threshold, ymin=0, ymax=7)
 plt.xlim(0, 2.6)
 plt.show()
+'''
+entr = calc_entropy(data_below_df.values)
+print entr
 
 
 
