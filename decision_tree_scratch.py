@@ -245,34 +245,13 @@ for i in range(0, len(test_set)):
     print test_set[i]
 '''
 
-# convert training dataframe into a numpy 2-D array
-train_data = train_df.values
-splits = potential_splits(train_data)
-
-
-# plotting using the split value function
-split_col = 3
-threshold = 0.8
-threshold2 = 1.05
-data_below, data_above = split_value(train_data, split_col, threshold)
-
-# used for testing entropy for each class
-data_below_df = pd.DataFrame(data_below, columns=df.columns)
-data_above_df = pd.DataFrame(data_above, columns=df.columns)
-
-# determine best feature and value to split the data
-feature, val = best_split(train_data, splits)
-print feature, val
-print m_columns[feature]
-
 no_iris_virginica = train_df[train_df['Label'] != 'Iris-virginica']
 
 tree = decision_tree_algorithm(train_df, column_names)
 print pprint(tree)
 
-'''
-sns.lmplot(x='Petal width', y='Petal length', data=no_iris_virginica, hue='Label', fit_reg=False, size=6, aspect=1.5)
+sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
 plt.vlines(x=val, ymin=0, ymax=7)
 plt.show()
-'''
+
 
