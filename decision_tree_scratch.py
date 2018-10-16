@@ -133,11 +133,6 @@ def split_value(data, feature, split_value):
 
     return data_below, data_above
 
-# PART 3X: Build Decision tree Algorithm
-def decision_tree():
-
-    return True
-
 # Part 3E: Lowest Overall Entropy
 '''
 We will calculate the lowest overall entropy per attribute using this function. 
@@ -169,25 +164,61 @@ def calc_overall_entropy(data_below, data_above):
 This function will determine the best feature and threshold on which to split
 the data using the overall entropy function
 '''
-# PART 4: Determine Best Split
-def best_split(data):
-    # store dictionary of potential splits into a local variable
-    m_splits = potential_splits(data)
+# PART 3G: Determine Best Split
+def best_split(data, m_splits):
 
     # store variable to hold temporary entropy
-    best_feature, best_split_value, min_entropy = 0, 0, 2000
+    min_entropy = 2000
     for idx in m_splits:
         for split_val in m_splits[idx]:
             m_below, m_above = split_value(train_data, idx, split_val)
             curr_entropy = calc_overall_entropy(m_below, m_above)
             # if current calculated entropy is strictly smaller than minimum entropy
             # replace the smallest value with the current value
-            if curr_entropy < min_entropy:
+            if curr_entropy <= min_entropy:
                 min_entropy = curr_entropy
                 best_feature = idx
                 best_split_value = split_val
 
     return best_feature, best_split_value
+
+# PART 4: Decision Tree Algorithm
+'''
+This is a recursive algorithm which will return a dictionary representing our tree
+'''
+def decision_tree_algorithm(dframe, count=0):
+
+    '''
+    Example Tree:
+    tree = {"petal-length < 0.8?":["Iris-setosa", {"petal-length >= 1.65?":
+    [{"petal-width > 0.4?": ["Iris Virginica"]}, Iris-versicolor]}]}
+    '''
+    if count == 0:
+        dframe = dframe.values # convert to a 2-D numPy array
+
+    count = count+1 # increment count to escape if statement after first check
+    # base (stopping) case
+    if check_purity(dframe):
+        label = classify(dframe)
+        return label # return classification of data
+
+    # recursive case
+    splits = potential_splits(dframe)
+    m_feature, m_value = best_split(dframe, splits)
+    m_data_below, m_data_above = split_value(dframe, m_feature, m_value) # partition the data based on m_feature and m_value
+
+    # ask question to recursively branch
+    question = "{0} < {1}?".format(m_feature, m_value)
+    tree = {question: []} # instantiate dictionary object
+
+    label_yes = decision_tree_algorithm(m_data_below, count) # recurse on smaller subsets of data
+    label_no = decision_tree_algorithm(m_data_above, count)
+    # end of recursion
+
+    # after stack unwinding, classify tree from bottom up
+    tree[question].append([label_yes, label_no])
+
+    return tree
 
 # PART 5: Determine Accuracy
 
@@ -196,6 +227,9 @@ f_name = datasets.load_iris()
 m_columns = {0: 'Sepal length', 1: 'Sepal width', 2: 'Petal length', 3: 'Petal width'}
 m_label = 'Label'
 df = load_data(f_name, m_columns, m_label)
+
+column_names = df.columns[df.columns != 'Label']
+
 
 train_df, test_df = train_test_split(df, 20)
 
@@ -221,19 +255,19 @@ data_below, data_above = split_value(train_data, split_col, threshold)
 data_below_df = pd.DataFrame(data_below, columns=df.columns)
 data_above_df = pd.DataFrame(data_above, columns=df.columns)
 
-'''
-sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
-plt.vlines(x=threshold, ymin=0, ymax=7)
-plt.xlim(0, 2.6)
-plt.show()
-'''
-overall_entr = calc_overall_entropy(data_below_df.values, data_above_df.values)
-print overall_entr
-print
-
-feature, val = best_split(train_data)
+# determine best feature and value to split the data
+feature, val = best_split(train_data, splits)
 print feature, val
+print m_columns[feature]
 
-sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
-plt.hlines(y=val, xmin=0, xmax=2.5)
+no_iris_virginica = train_df[train_df['Label'] != 'Iris-virginica']
+
+'''
+sns.lmplot(x='Petal width', y='Petal length', data=no_iris_virginica, hue='Label', fit_reg=False, size=6, aspect=1.5)
+plt.vlines(x=val, ymin=0, ymax=7)
 plt.show()
+'''
+tree = decision_tree_algorithm(no_iris_virginica)
+print tree
+
+
