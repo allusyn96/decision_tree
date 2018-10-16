@@ -187,7 +187,7 @@ def best_split(data, m_splits):
 '''
 This is a recursive algorithm which will return a dictionary representing our tree
 '''
-def decision_tree_algorithm(dframe, cols, count=0):
+def decision_tree_algorithm(dframe, cols, count=0, min_samples=2, max_depth = 10):
 
     '''
     Example Tree:
@@ -200,7 +200,7 @@ def decision_tree_algorithm(dframe, cols, count=0):
         data = dframe
 
     # base (stopping) case
-    if check_purity(data) == True:
+    if (check_purity(data)) or (len(data) < min_samples) or (count == max_depth):
         label = classify(data)
         return label # return classification of data
 
@@ -215,13 +215,16 @@ def decision_tree_algorithm(dframe, cols, count=0):
     question = "{0} < {1}?".format(cols[m_feature], m_value)
     tree = {question: []} # instantiate dictionary object
 
-    label_yes = decision_tree_algorithm(m_data_below, cols, count) # recurse on smaller subsets of data
-    label_no = decision_tree_algorithm(m_data_above, cols, count)
+    label_yes = decision_tree_algorithm(m_data_below, cols, count, min_samples, max_depth) # recurse on smaller subsets of data
+    label_no = decision_tree_algorithm(m_data_above, cols, count, min_samples, max_depth)
     # end of recursion
 
     # after stack unwinding, classify tree from bottom up
-    tree[question].append(label_yes)
-    tree[question].append(label_no)
+    if label_yes == label_no:
+        tree = label_yes
+    else:
+        tree[question].append(label_yes)
+        tree[question].append(label_no)
 
     return tree
 
@@ -251,7 +254,7 @@ tree = decision_tree_algorithm(train_df, column_names)
 print pprint(tree)
 
 sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
-plt.vlines(x=val, ymin=0, ymax=7)
+plt.vlines(x=0.8, ymin=0, ymax=7)
 plt.show()
 
 
