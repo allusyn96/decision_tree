@@ -165,7 +165,31 @@ def calc_overall_entropy(data_below, data_above):
 
     return overall_entropy
 
-# PART 4: Determine Accuracy
+'''
+This function will determine the best feature and threshold on which to split
+the data using the overall entropy function
+'''
+# PART 4: Determine Best Split
+def best_split(data):
+    # store dictionary of potential splits into a local variable
+    m_splits = potential_splits(data)
+
+    # store variable to hold temporary entropy
+    best_feature, best_split_value, min_entropy = 0, 0, 2000
+    for idx in m_splits:
+        for split_val in m_splits[idx]:
+            m_below, m_above = split_value(train_data, idx, split_val)
+            curr_entropy = calc_overall_entropy(m_below, m_above)
+            # if current calculated entropy is strictly smaller than minimum entropy
+            # replace the smallest value with the current value
+            if curr_entropy < min_entropy:
+                min_entropy = curr_entropy
+                best_feature = idx
+                best_split_value = split_val
+
+    return best_feature, best_split_value
+
+# PART 5: Determine Accuracy
 
 
 f_name = datasets.load_iris()
@@ -205,8 +229,11 @@ plt.show()
 '''
 overall_entr = calc_overall_entropy(data_below_df.values, data_above_df.values)
 print overall_entr
+print
 
+feature, val = best_split(train_data)
+print feature, val
 
-
-
-
+sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
+plt.hlines(y=val, xmin=0, xmax=2.5)
+plt.show()
