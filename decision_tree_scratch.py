@@ -141,6 +141,8 @@ def decision_tree():
 # Part 3E: Lowest Overall Entropy
 '''
 We will calculate the lowest overall entropy per attribute using this function. 
+@params
+probabilities: proportion of points in each class label over overall number of points
 '''
 def calc_entropy(data):
 
@@ -151,6 +153,17 @@ def calc_entropy(data):
     entropy = np.sum((-1 * probabilities) * (np.log2(probabilities)))
 
     return entropy
+
+# PART 3F: Overall Entropy used for Information Gain
+def calc_overall_entropy(data_below, data_above):
+
+    points_below, points_above = len(data_below), len(data_above)
+    total_pts = points_below + points_above
+    prop_below, prop_above = points_below/total_pts, points_above/total_pts
+
+    overall_entropy = (prop_below*calc_entropy(data_below))+(prop_above*calc_entropy(data_above))
+
+    return overall_entropy
 
 # PART 4: Determine Accuracy
 
@@ -177,6 +190,7 @@ splits = potential_splits(train_data)
 # plotting using the split value function
 split_col = 3
 threshold = 0.8
+threshold2 = 1.05
 data_below, data_above = split_value(train_data, split_col, threshold)
 
 # used for testing entropy for each class
@@ -189,8 +203,8 @@ plt.vlines(x=threshold, ymin=0, ymax=7)
 plt.xlim(0, 2.6)
 plt.show()
 '''
-entr = calc_entropy(data_below_df.values)
-print entr
+overall_entr = calc_overall_entropy(data_below_df.values, data_above_df.values)
+print overall_entr
 
 
 
