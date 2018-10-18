@@ -212,7 +212,7 @@ def decision_tree_algorithm(dframe, cols, count=0, min_samples=2, max_depth = 10
     m_data_below, m_data_above = split_value(data, m_feature, m_value) # partition the data based on m_feature and m_value
 
     # ask question to recursively branch
-    question = "{0} < {1}?".format(cols[m_feature], m_value)
+    question = "{0} <= {1} ?".format(cols[m_feature], m_value)
     tree = {question: []} # instantiate dictionary object
 
     label_yes = decision_tree_algorithm(m_data_below, cols, count, min_samples, max_depth) # recurse on smaller subsets of data
@@ -228,11 +228,33 @@ def decision_tree_algorithm(dframe, cols, count=0, min_samples=2, max_depth = 10
 
     return tree
 
-# PART 5: Determine Accuracy
+# PART 5: Classify data on unseen test example
+'''
+This function will work on the test data by utilising part 4
+'''
+def classify_data(example, tree):
+
+    # ask questions on example data
+    question = list(tree)[0]
+    question_split = question.split()
+    feature = question_split[0]
+    value = question_split[2]
+    if example[feature] <= float(value):
+        classification = tree[question][0]
+    else:
+        classification = tree[question][1] # this is a dictionary
+        print 'in else'
+    # base case
+    if not isinstance(classification, dict):
+        return classification
+    # recursive case
+    return classify_data(example, classification)
+
+# PART 6: Determine Accuracy
 
 
 f_name = datasets.load_iris()
-m_columns = {0: 'Sepal length', 1: 'Sepal width', 2: 'Petal length', 3: 'Petal width'}
+m_columns = {0: 'Sepal_length', 1: 'Sepal_width', 2: 'Petal_length', 3: 'Petal_width'}
 m_label = 'Label'
 df = load_data(f_name, m_columns, m_label)
 
@@ -251,10 +273,16 @@ for i in range(0, len(test_set)):
 no_iris_virginica = train_df[train_df['Label'] != 'Iris-virginica']
 
 tree = decision_tree_algorithm(train_df, column_names)
-print pprint(tree)
+#print pprint(tree)
 
+'''
 sns.lmplot(x='Petal width', y='Petal length', data=train_df, hue='Label', fit_reg=False, size=6, aspect=1.5)
 plt.vlines(x=0.8, ymin=0, ymax=7)
 plt.show()
+'''
 
-
+example = test_df.iloc[0]
+print example
+name = classify_data(example, tree)
+print
+print 'The predicted name of the flower is {0}'.format(name)
